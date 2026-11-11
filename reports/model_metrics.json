@@ -1,0 +1,9 @@
+{
+    "model": "Random Forest Regressor",
+    "mae": 2828.769437634036,
+    "rmse": 3491.015912728755,
+    "baseline_mae": 1459.8355923987835,
+    "baseline_rmse": 1993.2922254021319,
+    "training_records": 244,
+    "testing_records": 62
+}
