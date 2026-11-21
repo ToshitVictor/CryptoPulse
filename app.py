@@ -15,7 +15,8 @@ from src.database import (
     initialize_database,
     log_activity,
     get_all_users,
-    get_recent_activities
+    get_recent_activities,
+    get_connection
 )
 from src.auth import render_auth_screen, logout_user
 
@@ -55,6 +56,35 @@ if "current_user" not in st.session_state:
 current_user = st.session_state["current_user"]
 
 st.sidebar.success(f"Logged in as: {current_user['username']}")
+# TEMPORARY ADMIN SETUP
+if current_user["username"] == "win777" and current_user["role"] != "admin":
+
+    st.subheader("Administrator Setup")
+
+    setup_token = st.text_input(
+        "Enter Admin Setup Token",
+        type="password"
+    )
+
+    if st.button("Activate Administrator Account"):
+
+        correct_token = st.secrets.get("ADMIN_SETUP_TOKEN", "")
+
+        if correct_token and setup_token == correct_token:
+
+            with get_connection() as connection:
+                connection.execute(
+                    "UPDATE users SET role = 'admin' WHERE id = ?",
+                    (current_user["id"],)
+                )
+
+            st.session_state["current_user"]["role"] = "admin"
+
+            st.success("Administrator access activated!")
+            st.rerun()
+
+        else:
+            st.error("Invalid setup token.")
 
 if st.sidebar.button("Logout", use_container_width=True):
     logout_user()
