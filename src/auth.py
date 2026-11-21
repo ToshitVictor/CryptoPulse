@@ -76,6 +76,109 @@ CryptoPulse Team
         print(f"Email error: {e}")
         return False, "Unable to send email. Check your Gmail configuration."
 
+
+def apply_auth_styles():
+    st.markdown("""
+    <style>
+    /* Main background */
+    .stApp {
+        background:
+            radial-gradient(ellipse at 15% 10%, rgba(92, 61, 180, 0.20), transparent 40%),
+            radial-gradient(ellipse at 85% 85%, rgba(25, 105, 180, 0.16), transparent 40%),
+            #080d19;
+    }
+
+    /* Main content width */
+    .main .block-container {
+        max-width: 720px;
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+
+    /* Branding */
+    h1 {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        letter-spacing: -1.5px;
+    }
+
+    h2, h3 {
+        color: #f1f5ff !important;
+    }
+
+    p, label, .stMarkdown {
+        color: #c4cbe0;
+    }
+
+    /* Forms and containers */
+    div[data-testid="stForm"],
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: rgba(19, 27, 46, 0.78);
+        border: 1px solid rgba(139, 125, 255, 0.20);
+        border-radius: 16px;
+        padding: 18px;
+    }
+
+    /* Input fields */
+    .stTextInput input {
+        background: #111a2d !important;
+        color: #ffffff !important;
+        border: 1px solid #303c58 !important;
+        border-radius: 9px !important;
+    }
+
+    .stTextInput input:focus {
+        border-color: #9278ff !important;
+        box-shadow: 0 0 0 1px #9278ff !important;
+    }
+
+    /* Buttons */
+    .stButton button,
+    .stFormSubmitButton button {
+        background: linear-gradient(100deg, #7655e8, #3979df);
+        color: white !important;
+        border: none;
+        border-radius: 9px;
+        font-weight: 650;
+        min-height: 43px;
+        transition: 0.2s ease;
+    }
+
+    .stButton button:hover,
+    .stFormSubmitButton button:hover {
+        border: 1px solid #b6a4ff;
+        filter: brightness(1.12);
+    }
+
+    /* Login and registration tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 12px;
+        border-bottom: 1px solid #29344d;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        color: #aeb9d1;
+        font-weight: 600;
+    }
+
+    .stTabs [aria-selected="true"] {
+        color: #a995ff !important;
+    }
+
+    /* Dividers */
+    hr {
+        border-color: #29344d !important;
+    }
+
+    /* Alerts */
+    div[data-testid="stAlert"] {
+        border-radius: 10px;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+
 def render_forgot_password():
     st.title("🔑 Forgot Password")
     st.caption("Reset your CryptoPulse account password.")
@@ -185,141 +288,369 @@ def render_forgot_password():
 
 
 
+
 def render_auth_screen():
-    """Display login, registration and password recovery screens."""
+    """Modern CryptoPulse authentication screen."""
 
-    st.title("₿ CryptoPulse")
-    st.subheader("Welcome to CryptoPulse")
-    st.caption("Sign in to access cryptocurrency analytics and predictions.")
+    st.markdown("""
+    <style>
+    /* Main background */
+    .stApp {
+        background: linear-gradient(135deg, #07152e, #102b55, #07152e);
+        color: white;
+    }
 
-    # FORGOT PASSWORD SCREEN
-    if st.session_state.get("show_forgot_password", False):
+    .block-container {
+        max-width: 1250px;
+        padding-top: 3rem;
+        padding-bottom: 2rem;
+    }
 
-        render_forgot_password()
+    /* Branding */
+    .brand-title {
+        color: white;
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 5px;
+    }
 
-        if st.button("Back to Login"):
-            for key in [
-                "show_forgot_password",
-                "reset_email",
-                "otp_sent",
-                "otp_verified"
-            ]:
-                st.session_state.pop(key, None)
+    .brand-subtitle {
+        color: #a9c5ed;
+        font-size: 15px;
+        margin-bottom: 28px;
+    }
 
-            st.rerun()
+    /* Login and registration form cards */
+    div[data-testid="stForm"] {
+        background: #dcecff;
+        padding: 25px;
+        border-radius: 18px;
+        border: 1px solid #a8c9ef;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
 
-        return
+    div[data-testid="stForm"] label {
+        color: #10264a !important;
+        font-weight: 600;
+    }
 
-    # LOGIN AND REGISTRATION TABS
-    login_tab, register_tab = st.tabs(["Login", "Create Account"])
+    div[data-testid="stForm"] input {
+        background: #f7faff !important;
+        color: #10264a !important;
+        border: 1px solid #b4cdec !important;
+        border-radius: 9px !important;
+    }
 
-    # LOGIN TAB
-    with login_tab:
+    /* Buttons */
+    .stButton button,
+    .stFormSubmitButton button {
+        background: linear-gradient(90deg, #2878e8, #5b9cff);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        min-height: 43px;
+        transition: 0.2s ease;
+    }
 
-        st.markdown("### Login to your account")
+    .stButton button:hover,
+    .stFormSubmitButton button:hover {
+        background: #1765d0;
+        color: white;
+        border: none;
+        transform: translateY(-2px);
+    }
 
-        with st.form("login_form"):
+    /* Tabs */
+    .stTabs [data-baseweb="tab"] {
+        color: #c9ddfa;
+        font-weight: 700;
+    }
 
-            username = st.text_input("Username")
-            password = st.text_input(
-                "Password",
-                type="password"
-            )
+    .stTabs [aria-selected="true"] {
+        color: white !important;
+    }
 
-            login_button = st.form_submit_button(
-                "Login",
-                use_container_width=True
-            )
+    /* Right-side panel */
+    .crypto-heading {
+        color: white;
+        font-size: 29px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
 
-        if login_button:
+    .crypto-subtitle {
+        color: #a9c5ed;
+        font-size: 14px;
+        line-height: 1.7;
+    }
 
-            user = get_user_by_username(username)
+    .crypto-banner {
+        background: linear-gradient(135deg, #173d72, #091b38);
+        padding: 30px 20px;
+        border-radius: 20px;
+        text-align: center;
+        border: 1px solid #386ba8;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+        margin-top: 20px;
+        margin-bottom: 22px;
+    }
 
-            if user and verify_password(
-                password,
-                user["password_hash"]
-            ):
+    .crypto-symbol {
+        font-size: 75px;
+        margin-bottom: 5px;
+    }
 
-                st.session_state["current_user"] = {
-                    "id": user["id"],
-                    "username": user["username"],
-                    "role": user["role"]
-                }
+    .crypto-banner-title {
+        color: white;
+        font-size: 27px;
+        font-weight: 800;
+    }
 
-                log_activity(
-                    user["id"],
-                    "LOGIN",
-                    "User logged in successfully"
-                )
+    .crypto-banner-text {
+        color: #b9d5f5;
+        font-size: 14px;
+    }
 
-                st.success("Login successful!")
+    /* Market asset cards */
+    div[data-testid="stMetric"] {
+        background: linear-gradient(145deg, #173d72, #10294d);
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid #315d91;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    div[data-testid="stMetricLabel"] {
+        color: #a9c5ed !important;
+    }
+
+    div[data-testid="stMetricValue"] {
+        color: white !important;
+        font-size: 22px !important;
+    }
+
+    /* Information messages */
+    div[data-testid="stAlert"] {
+        border-radius: 12px;
+    }
+
+    @media (max-width: 750px) {
+        .brand-title {
+            font-size: 32px;
+        }
+
+        .crypto-heading {
+            font-size: 24px;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    left_col, right_col = st.columns([1, 1.1], gap="large")
+
+    # LEFT SIDE: AUTHENTICATION
+    with left_col:
+
+        st.markdown(
+            '<div class="brand-title">₿ CryptoPulse</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            '<div class="brand-subtitle">'
+            'Your gateway to smarter cryptocurrency insights.'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+        # Forgot password
+        if st.session_state.get("show_forgot_password", False):
+
+            render_forgot_password()
+
+            if st.button("← Back to Login", use_container_width=True):
+                for key in [
+                    "show_forgot_password",
+                    "reset_email",
+                    "otp_sent",
+                    "otp_verified"
+                ]:
+                    st.session_state.pop(key, None)
+
                 st.rerun()
 
-            else:
-                st.error("Invalid username or password.")
+            return
 
-        st.divider()
+        # LOGIN AND REGISTRATION TABS
+        login_tab, register_tab = st.tabs(
+            ["Login", "Create Account"]
+        )
 
-        if st.button("Forgot Password?", use_container_width=True):
-            st.session_state["show_forgot_password"] = True
-            st.rerun()
+        # LOGIN
+        with login_tab:
 
-    # REGISTRATION TAB
-    with register_tab:
+            st.markdown("### Welcome Back")
+            st.caption("Sign in to continue to your dashboard.")
 
-        st.markdown("### Create a new account")
+            with st.form("login_form"):
 
-        with st.form("register_form"):
+                username = st.text_input("Username")
 
-            new_username = st.text_input("Choose a username")
-            new_email = st.text_input("Email address")
-
-            new_password = st.text_input(
-                "Create password",
-                type="password"
-            )
-
-            confirm_password = st.text_input(
-                "Confirm password",
-                type="password"
-            )
-
-            register_button = st.form_submit_button(
-                "Create Account",
-                use_container_width=True
-            )
-
-        if register_button:
-
-            if new_password != confirm_password:
-
-                st.error("Passwords do not match.")
-
-            else:
-
-                success, message = register_user(
-                    new_username,
-                    new_email,
-                    new_password
+                password = st.text_input(
+                    "Password",
+                    type="password"
                 )
 
-                if success:
+                login_button = st.form_submit_button(
+                    "Login",
+                    use_container_width=True
+                )
 
-                    st.success(message)
+            if login_button:
 
-                    user = get_user_by_username(new_username)
+                user = get_user_by_username(username)
 
-                    if user:
-                        log_activity(
-                            user["id"],
-                            "REGISTER",
-                            "New account created"
-                        )
+                if user and verify_password(
+                    password,
+                    user["password_hash"]
+                ):
 
-                    st.info("You can now log in.")
+                    st.session_state["current_user"] = {
+                        "id": user["id"],
+                        "username": user["username"],
+                        "role": user["role"]
+                    }
+
+                    log_activity(
+                        user["id"],
+                        "LOGIN",
+                        "User logged in successfully"
+                    )
+
+                    st.success("Login successful!")
+                    st.rerun()
 
                 else:
-                    st.error(message)
+                    st.error("Invalid username or password.")
+
+            st.divider()
+
+            if st.button(
+                "Forgot Password?",
+                use_container_width=True
+            ):
+                st.session_state["show_forgot_password"] = True
+                st.rerun()
+
+        # REGISTRATION
+        with register_tab:
+
+            st.markdown("### Create Your Account")
+            st.caption("Join CryptoPulse and explore crypto analytics.")
+
+            with st.form("register_form"):
+
+                new_username = st.text_input("Choose a username")
+                new_email = st.text_input("Email address")
+
+                new_password = st.text_input(
+                    "Create password",
+                    type="password"
+                )
+
+                confirm_password = st.text_input(
+                    "Confirm password",
+                    type="password"
+                )
+
+                register_button = st.form_submit_button(
+                    "Create Account",
+                    use_container_width=True
+                )
+
+            if register_button:
+
+                if new_password != confirm_password:
+
+                    st.error("Passwords do not match.")
+
+                else:
+
+                    success, message = register_user(
+                        new_username,
+                        new_email,
+                        new_password
+                    )
+
+                    if success:
+
+                        st.success(message)
+
+                        user = get_user_by_username(new_username)
+
+                        if user:
+                            log_activity(
+                                user["id"],
+                                "REGISTER",
+                                "New account created"
+                            )
+
+                        st.info("You can now log in.")
+
+                    else:
+                        st.error(message)
+
+    # RIGHT SIDE: CRYPTO SHOWCASE
+    with right_col:
+
+        st.markdown(
+            '<div class="crypto-heading">'
+            'Explore the Crypto World'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            '<div class="crypto-subtitle">'
+            'Discover digital assets and explore the cryptocurrency market.'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown("""
+        <div class="crypto-banner">
+            <div class="crypto-symbol">₿</div>
+            <div class="crypto-banner-title">CryptoPulse</div>
+            <p class="crypto-banner-text">
+                Track markets. Discover trends. Make smarter decisions.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("#### Popular Cryptocurrencies")
+
+        asset1, asset2, asset3 = st.columns(3)
+
+        with asset1:
+            st.metric("₿ BITCOIN", "BTC")
+
+        with asset2:
+            st.metric("Ξ ETHEREUM", "ETH")
+
+        with asset3:
+            st.metric("◎ SOLANA", "SOL")
+
+        st.write("")
+
+        st.info(
+            "📊 Explore cryptocurrency prices, market trends "
+            "and analytics with CryptoPulse."
+        )
+
+
+
 
 
 def logout_user():
