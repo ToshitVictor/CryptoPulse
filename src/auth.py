@@ -22,9 +22,21 @@ from src.database import (
 load_dotenv()
 
 
+
 def send_otp_email(receiver_email, otp):
-    sender_email = os.getenv("SMTP_EMAIL")
-    app_password = os.getenv("SMTP_APP_PASSWORD")
+    # Read credentials from Streamlit Cloud Secrets first
+    try:
+        sender_email = st.secrets.get(
+            "SMTP_EMAIL", os.getenv("SMTP_EMAIL")
+        )
+        app_password = st.secrets.get(
+            "SMTP_APP_PASSWORD", os.getenv("SMTP_APP_PASSWORD")
+        )
+
+    except Exception:
+        # Fallback for local development using .env
+        sender_email = os.getenv("SMTP_EMAIL")
+        app_password = os.getenv("SMTP_APP_PASSWORD")
 
     if not sender_email or not app_password:
         return False, "Email configuration is missing."
@@ -60,9 +72,10 @@ CryptoPulse Team
 
         return True, "OTP sent successfully."
 
-    except Exception:
+    except Exception as e:
+        print(f"Email error: {e}")
         return False, "Unable to send email. Check your Gmail configuration."
-    
+
 def render_forgot_password():
     st.title("🔑 Forgot Password")
     st.caption("Reset your CryptoPulse account password.")
