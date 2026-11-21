@@ -11,6 +11,14 @@ import plotly.graph_objects as go
 import requests
 import streamlit as st
 from dotenv import load_dotenv
+from src.database import (
+    initialize_database,
+    log_activity,
+    get_all_users,
+    get_recent_activities,
+    get_connection
+)
+from src.auth import render_auth_screen, logout_user
 
 # --------------------------------------------------
 # 1. PROJECT PATHS AND CONFIGURATION
@@ -34,6 +42,119 @@ st.set_page_config(
     layout="wide"
 )
 
+
+# --------------------------------------------------
+# USER AUTHENTICATION
+# --------------------------------------------------
+
+initialize_database()
+
+if "current_user" not in st.session_state:
+    render_auth_screen()
+    st.stop()
+
+current_user = st.session_state["current_user"]
+
+st.sidebar.success(f"Logged in as: {current_user['username']}")
+# TEMPORARY ADMIN SETUP
+if current_user["username"] == "win777" and current_user["role"] != "admin":
+
+    st.subheader("Administrator Setup")
+
+    setup_token = st.text_input(
+        "Enter Admin Setup Token",
+        type="password"
+    )
+
+    if st.button("Activate Administrator Account"):
+
+        correct_token = st.secrets.get("ADMIN_SETUP_TOKEN", "")
+
+        if correct_token and setup_token == correct_token:
+
+            with get_connection() as connection:
+                connection.execute(
+                    "UPDATE users SET role = 'admin' WHERE id = ?",
+                    (current_user["id"],)
+                )
+
+            st.session_state["current_user"]["role"] = "admin"
+
+            st.success("Administrator access activated!")
+            st.rerun()
+
+        else:
+            st.error("Invalid setup token.")
+
+if st.sidebar.button("Logout", use_container_width=True):
+    logout_user()
+    # --------------------------------------------------
+# ADMIN DASHBOARD
+# --------------------------------------------------
+
+if current_user["role"] == "admin":
+
+    page = st.sidebar.radio(
+        "Navigation",
+        ["Market Dashboard", "Admin Dashboard"]
+    )
+
+    if page == "Admin Dashboard":
+
+        st.title("🔐 Admin Dashboard")
+        st.caption("Monitor registered users and their activity.")
+
+        users = get_all_users()
+        activities = get_recent_activities(limit=100)
+
+        user_df = pd.DataFrame(users)
+        activity_df = pd.DataFrame(activities)
+
+        total_users = len(users)
+        total_admins = sum(
+            1 for user in users if user["role"] == "admin"
+        )
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric("Total Users", total_users)
+        col2.metric("Admin Accounts", total_admins)
+        col3.metric("Recent Activities", len(activities))
+
+        st.divider()
+
+        st.subheader("👥 Registered Users")
+
+        if not user_df.empty:
+            st.dataframe(
+                user_df,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info("No registered users found.")
+
+        st.divider()
+
+        st.subheader("📋 Recent User Activities")
+
+        if not activity_df.empty:
+
+            st.dataframe(
+                activity_df,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            st.subheader("Activity Breakdown")
+
+            activity_counts = activity_df["action"].value_counts()
+            st.bar_chart(activity_counts)
+
+        else:
+            st.info("No activity has been recorded yet.")
+
+        st.stop()
 
 # --------------------------------------------------
 # 2. HELPER FUNCTIONS
@@ -270,11 +391,16 @@ with status_col3:
 
 
 if st.button("Refresh Market Data"):
+    log_activity(
+        current_user["id"],
+        "MARKET_REFRESH",
+        "User refreshed cryptocurrency market data"
+    )
+
     get_global_data.clear()
     get_market_data.clear()
     get_trending_data.clear()
     st.rerun()
-
 
 # --------------------------------------------------
 # 7. GLOBAL MARKET STATISTICS
@@ -333,17 +459,30 @@ else:
 # --------------------------------------------------
 # 8. MARKET OVERVIEW
 # --------------------------------------------------
-
 st.divider()
 st.header("Cryptocurrency Market Overview")
 
 market = pd.DataFrame(market_records)
+
 if not market.empty:
+
     search = st.text_input(
         "Search cryptocurrency",
         placeholder="Search Bitcoin, Ethereum..."
     )
 
+    # ACTIVITY TRACKING
+    if search.strip():
+        if search != st.session_state.get("last_logged_search"):
+            log_activity(
+                current_user["id"],
+                "CRYPTO_SEARCH",
+                f"Search query: {search.strip()[:50]}"
+            )
+
+            st.session_state["last_logged_search"] = search
+
+    # FILTER SEARCH RESULTS
     if "name" in market.columns and search:
         market = market[
             market["name"].astype(str).str.contains(
@@ -370,6 +509,7 @@ if not market.empty:
         use_container_width=True,
         hide_index=True
     )
+
 else:
     st.warning("Market overview data is not available.")
 
@@ -485,6 +625,14 @@ st.divider()
 st.header("Bitcoin Price Prediction")
 
 prediction_result, prediction_error = get_prediction()
+if prediction_result and not st.session_state.get("prediction_logged"):
+    log_activity(
+        current_user["id"],
+        "PREDICTION_VIEW",
+        "User viewed Bitcoin price prediction"
+    )
+
+    st.session_state["prediction_logged"] = True
 
 if prediction_result:
 
